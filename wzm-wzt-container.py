@@ -13,6 +13,7 @@ Contents:
 """
 
 import os
+import subprocess
 from hpccm.templates.CMakeBuild import CMakeBuild
 from hpccm.templates.git import git
 
@@ -22,6 +23,15 @@ Stage0.name = 'devel'
 cuda_version = USERARG.get('CUDA_VERSION', '10.1')
 ubuntu_version = USERARG.get('UBUNTU_VERSION', '18.04')
 openmpi_version = USERARG.get('OPENMPI_VERSION', '2.1.5')
+gcc_version = USERARG.get("GCC_VERSION", '5.4')
+gpu = USERARG.get("GMX_GPU", "ON")
+
+if ubuntu_version == "16.04":
+    python_version = '3.5'
+elif ubuntu_version == '18.04':
+    python_version = '3.6'
+else:
+    python_version = '3.5'
 
 Stage0 += baseimage(image='nvidia/cuda:{}-devel-ubuntu{}'.format(
     cuda_version, ubuntu_version),
@@ -29,7 +39,7 @@ Stage0 += baseimage(image='nvidia/cuda:{}-devel-ubuntu{}'.format(
 
 Stage0 += python(devel=True)
 
-compiler = gnu(fortran=False)
+compiler = gnu(fortran=False, extra_repository=True, version=gcc_version)
 Stage0 += compiler
 
 Stage0 += packages(ospackages=['ca-certificates', 'cmake',
@@ -51,8 +61,10 @@ Stage0 += pip(packages=[
 Stage0 += environment(
     variables={
         'PYTHONPATH':
-        '$PYTHONPATH:/usr/lib/python3.6/site-packages:/usr/local/lib/python3.6/dist-packages:/builds/gmxapi/build:/builds/sample_restraint/build/src/pythonmodule',
-        'PATH': '$PATH:/usr/local/gromacs/bin'
+        '$PYTHONPATH:/usr/lib/python{}/site-packages:/usr/local/lib/python{}/dist-packages:/builds/gmxapi/build:/builds/sample_restraint/build/src/pythonmodule'
+        .format(python_version, python_version),
+        'PATH':
+        '$PATH:/usr/local/gromacs/bin'
     })
 
 ################################################
@@ -71,8 +83,9 @@ build_cmds = [
                       opts=[
                           '-DCMAKE_BUILD_TYPE=Release',
                           '-DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda',
-                          '-DGMX_BUILD_OWN_FFTW=ON', '-DGMX_GPU=ON',
-                          '-DGMX_MPI=OFF', '-DGMX_OPENMP=ON', '-DGMXAPI=ON',
+                          '-DGMX_BUILD_OWN_FFTW=ON',
+                          '-DGMX_GPU={}'.format(gpu), '-DGMX_MPI=OFF',
+                          '-DGMX_OPENMP=ON', '-DGMXAPI=ON',
                           '-DMPIEXEC_PREFLAGS=--allow-run-as-root'
                       ]),
     cm.build_step(),
@@ -151,6 +164,9 @@ if os.path.isdir('recipes/gromacs/examples'):
 Stage0 += label(metadata={'wzm_wzt': 'devel'})
 Stage0 += comment("Make the TACC directories")
 Stage0 += shell(commands=[
-    "mkdir /scratch /work /home1 /gpfs /corral-repl /corral-tacc /data"
+    "mkdir -p /scratch /work /home1 /gpfs /corral-repl /corral-tacc /data"
 ])
+
+Stage0 += comment("Make the comet directories")
+Stage0 += shell(commands=["mkdir -p /oasis /projects /scratch"])
 Stage0 += workdir(directory='/scratch')
