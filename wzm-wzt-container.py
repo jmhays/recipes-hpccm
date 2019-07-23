@@ -13,7 +13,6 @@ Contents:
 """
 
 import os
-import subprocess
 from hpccm.templates.CMakeBuild import CMakeBuild
 from hpccm.templates.git import git
 
@@ -110,7 +109,8 @@ build_cmds = [
         build_directory='/builds/gmxapi/build',
         opts=[
             "-DPYTHON_EXECUTABLE=`which python3`",
-            "-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.6m.so"
+            "-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython{}m.so".
+            format(python_version)
         ]),
     cm.build_step(),
     cm.build_step(target='install')
