@@ -7,14 +7,16 @@ Contents:
     OFED (upstream)
     OpenMPI version 2.1.5 (default)
     Gromacs 2019
-    gmxapi master
+    gmxapi v0.0.7.4
     sample_restraint corr-struct
-    wzm_wzt devel
+    run_brer master
 """
 
 import os
 from hpccm.templates.CMakeBuild import CMakeBuild
 from hpccm.templates.git import git
+from hpccm.templates.wget import wget
+from hpccm.templates.tar import tar
 
 Stage0 += comment(__doc__.strip(), reformat=False)
 Stage0.name = 'devel'
@@ -97,13 +99,15 @@ Stage0 += shell(commands=build_cmds)
 ################################################
 # gmxapi
 ################################################
-Stage0 += comment("gmxapi master")
+Stage0 += comment("gmxapi 0.0.7.4")
 cm = CMakeBuild()
 build_cmds = [
     git().clone_step(repository='https://github.com/kassonlab/gmxapi',
-                     branch='master',
+                     commit='4151f10871ad5fdcf5cb2f09b1febb632c560b4e',
                      path='/builds/gmxapi',
                      directory='src'),
+    # wget().download_step(outfile=tarball, url='https://github.com/kassonlab/gmxapi/archive/v0.0.7.4.tar.gz'),
+    # tar().untar_step(tarball=tarball, directory="src"),
     cm.configure_step(
         directory='/builds/gmxapi/src',
         build_directory='/builds/gmxapi/build',
@@ -142,14 +146,14 @@ build_cmds = [
 Stage0 += shell(commands=build_cmds)
 
 ################################################
-# wzm_wzt
+# run_brer
 ################################################
-Stage0 += comment("Wzm-Wzt devel")
+Stage0 += comment("run_brer master")
 
 build_cmds = [
-    git().clone_step(repository='https://github.com/jmhays/wzm_wzt',
-                     branch='devel',
-                     path='/builds/'), "pip3 install /builds/wzm_wzt/"
+    git().clone_step(repository='https://github.com/jmhays/run_brer',
+                     branch='master',
+                     path='/builds/'), "pip3 install /builds/run_brer/"
 ]
 Stage0 += shell(commands=build_cmds)
 
