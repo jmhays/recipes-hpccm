@@ -105,3 +105,8 @@ venv.bak/
 
 # VS Code
 .vscode/
+
+# Singularity images/recipes
+*.sif
+*.simg
+Singularity*
