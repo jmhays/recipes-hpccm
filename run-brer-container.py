@@ -173,4 +173,6 @@ Stage0 += shell(commands=[
 
 Stage0 += comment("Make the comet directories")
 Stage0 += shell(commands=["mkdir -p /oasis /projects /scratch"])
+Stage0 += comment("Make the bridges directories")
+Stage0 += shell(commands=["mkdir -p /pylon5"])
 Stage0 += workdir(directory='/scratch')
